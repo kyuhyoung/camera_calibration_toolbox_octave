@@ -1,4 +1,4 @@
-function [xc,good,bad,type] = cornerfinder(xt,I,wintx,winty,wx2,wy2);
+function [xc,good,bad,type] = cornerfinder(xt,I,wintx,winty,wx2,wy2,kk);
 
 %[xc] = cornerfinder(xt,I);
 %
@@ -222,6 +222,9 @@ xc(in_bad,:) = xt(in_bad,:);
 
 xc = fliplr(xc);
 xc = xc';
+disp(size(xc))
+sxc = struct('Mat', xc);
+##save('matrix.mat','xc');
 
 bad = bad';
 good = good';

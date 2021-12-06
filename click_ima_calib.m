@@ -8,7 +8,7 @@ if exist(['wintx_' num2str(kk)]),
     
     eval(['wintxkk = wintx_' num2str(kk) ';']);
     
-    if ~isempty(wintxkk) & ~isnan(wintxkk),
+    if ~isempty(wintxkk) && ~isnan(wintxkk),
         
         eval(['wintx = wintx_' num2str(kk) ';']);
         eval(['winty = winty_' num2str(kk) ';']);
@@ -162,7 +162,8 @@ end;
 
 n_sq_x_default = n_sq_x;
 n_sq_y_default = n_sq_y;
-
+ncx = n_sq_x + 1;
+ncy = n_sq_y + 1;
 
 if (exist('dX')~=1)|(exist('dY')~=1), % This question is now asked only once
     % Enter the size of each square
@@ -244,13 +245,43 @@ disp('Corner extraction...');
 
 grid_pts = cornerfinder(XX,I,winty,wintx); %%% Finds the exact corners at every points!
 
+%% array  to matrix
+% make zeros matrix with 2 channel
+corner_x = zeros(ncx,ncy);
+corner_y = zeros(ncx,ncy);
+% fill matrix values with reversed column major order
+
+idx = 1;
+for yiter = ncy:-1:1
+  for xiter= 1:ncx
+    corner_x(xiter,yiter) = grid_pts(1,idx);
+    corner_y(xiter,yiter) = grid_pts(2,idx);
+    idx = idx +1;
+  endfor
+endfor
+
+
+%% matrix to row-major array
+grid_pts_opencv = zeros(2, ncx*ncy);
+idx = 1;
+for xiter= 1: ncx 
+  for yiter = 1:ncy
+    
+    grid_pts_opencv(1,idx) = corner_x(xiter,yiter);
+    grid_pts_opencv(2,idx) = corner_y(xiter,yiter);
+    idx = idx +1;
+  endfor
+endfor
+
+
+
 
 
 %save all_corners x y grid_pts
 
 grid_pts = grid_pts - 1; % subtract 1 to bring the origin to (0,0) instead of (1,1) in matlab (not necessary in C)
 
-
+matlab2opencv(grid_pts_opencv, ['C:\handeye_calib\corners_from_octave/',num2str(kk),'.yml'], 'w')
 
 ind_corners = [1 n_sq_x+1 (n_sq_x+1)*n_sq_y+1 (n_sq_x+1)*(n_sq_y+1)]; % index of the 4 corners
 ind_orig = (n_sq_x+1)*n_sq_y + 1;
