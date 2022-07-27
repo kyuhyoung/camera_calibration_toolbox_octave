@@ -5,14 +5,14 @@ fprintf(1,'\nProcessing image %d...\n',kk);
 eval(['I = I_' num2str(kk) ';']);
 
 if exist(['wintx_' num2str(kk)]),
-    
+
     eval(['wintxkk = wintx_' num2str(kk) ';']);
-    
+
     if ~isempty(wintxkk) & ~isnan(wintxkk),
-        
+
         eval(['wintx = wintx_' num2str(kk) ';']);
         eval(['winty = winty_' num2str(kk) ';']);
-        
+
     end;
 end;
 
@@ -22,7 +22,7 @@ fprintf(1,'Using (wintx,winty)=(%d,%d) - Window size = %dx%d      (Note: To rese
 
 
 figure(2);
-image(I);
+ih = image(I);
 colormap(map);
 set(2,'color',[1 1 1]);
 
@@ -32,19 +32,86 @@ disp('Click on the four extreme corners of the rectangular complete pattern (the
 
 x= [];y = [];
 figure(2); hold on;
-for count = 1:4,
-    [xi,yi] = ginput4(1);
-    [xxi] = cornerfinder([xi;yi],I,winty,wintx);
-    xi = xxi(1);
-    yi = xxi(2);
-    figure(2);
-    plot(xi,yi,'+','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    plot(xi + [wintx+.5 -(wintx+.5) -(wintx+.5) wintx+.5 wintx+.5],yi + [winty+.5 winty+.5 -(winty+.5) -(winty+.5)  winty+.5],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    x = [x;xi];
-    y = [y;yi];
-    plot(x,y,'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    drawnow;
+
+all_plots=[];
+plots=[];
+
+count = 0
+bright = 0;
+
+data_loaded = 0;
+
+
+if ~type_numbering,
+  number_ext =  num2str(image_numbers(kk));
+else
+ 	number_ext = sprintf(['%.' num2str(N_slots) 'd'],image_numbers(kk));
 end;
+
+ima_name = [calib_name  number_ext '.cal'];
+
+if exist(ima_name)==2,
+  load(ima_name);
+  disp('data already available');
+  count = 4;
+  data_loaded = 1;
+  x = or_x;
+  y = or_y;
+end;
+
+while(count < 4),
+    [xi,yi, button] = zoomginput(1);
+
+    if button == '+',
+        #bright = min(bright, .99999);
+        disp(bright);
+        map = brighten(map, .1);
+        colormap(map);
+        drawnow
+    elseif button == '-'
+        #bright = bright - 0.1;
+        #bright = max(bright, -0.99999);
+        map = brighten(map, -0.1);
+        colormap(map);
+        disp(bright);
+        drawnow
+    end;
+
+    if button==1,
+        plots=[]
+        [xxi] = cornerfinder([xi;yi],I,winty,wintx);
+        xi = xxi(1);
+        yi = xxi(2);
+        figure(2);
+        plots = [plots; plot(xi,yi,'+','color',[ 1.000 0.314 0.510 ],'linewidth',2)];
+        plots = [plots; plot(xi + [wintx+.5 -(wintx+.5) -(wintx+.5) wintx+.5 wintx+.5],yi + [winty+.5 winty+.5 -(winty+.5) -(winty+.5)  winty+.5],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2)];
+        x = [x;xi];
+        y = [y;yi];
+        plots = [plots; plot(x,y,'-','color',[ 1.000 0.314 0.510 ],'linewidth',2)];
+        count = count + 1;
+        disp('count');
+        disp(count)
+        drawnow;
+        all_plots = [all_plots; plots];
+    elseif button==3
+        if count > 0,
+            x(end)=[];
+            y(end)=[];
+            delete(all_plots(end));
+            all_plots(end)=[];
+            delete(all_plots(end));
+            all_plots(end)=[];
+            delete(all_plots(end));
+            all_plots(end)=[];
+            count = count - 1;
+        end;
+    end;
+end;
+
+or_x = x;
+or_y = y;
+
+
 plot([x;x(1)],[y;y(1)],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
 drawnow;
 hold off;
@@ -107,7 +174,7 @@ vO = vO / norm(vO);
 delta = 30;
 
 
-figure(2); 
+figure(2);
 image(I);
 colormap(map);
 hold on;
@@ -120,43 +187,44 @@ set(hy,'color','g','Fontsize',14);
 hO=text(x4 + delta * vO(1) ,y4 + delta*vO(2),'O','color','g','Fontsize',14);
 hold off;
 
+if data_loaded == 0,
+  if manual_squares,
 
-if manual_squares,
-    
-    n_sq_x = input(['Number of squares along the X direction ([]=' num2str(n_sq_x_default) ') = ']); %6
-    if isempty(n_sq_x), n_sq_x = n_sq_x_default; end;
-    n_sq_y = input(['Number of squares along the Y direction ([]=' num2str(n_sq_y_default) ') = ']); %6
-    if isempty(n_sq_y), n_sq_y = n_sq_y_default; end; 
-    
-else
-    
-    % Try to automatically count the number of squares in the grid
-    
-    n_sq_x1 = count_squares(I,x1,y1,x2,y2,wintx);
-    n_sq_x2 = count_squares(I,x3,y3,x4,y4,wintx);
-    n_sq_y1 = count_squares(I,x2,y2,x3,y3,wintx);
-    n_sq_y2 = count_squares(I,x4,y4,x1,y1,wintx);
-    
-    
-    
-    % If could not count the number of squares, enter manually
-    
-    if (n_sq_x1~=n_sq_x2)|(n_sq_y1~=n_sq_y2),
-        
-        
-        disp('Could not count the number of squares in the grid. Enter manually.');
-        n_sq_x = input(['Number of squares along the X direction ([]=' num2str(n_sq_x_default) ') = ']); %6
-        if isempty(n_sq_x), n_sq_x = n_sq_x_default; end;
-        n_sq_y = input(['Number of squares along the Y direction ([]=' num2str(n_sq_y_default) ') = ']); %6
-        if isempty(n_sq_y), n_sq_y = n_sq_y_default; end; 
-        
-    else
-        
-        n_sq_x = n_sq_x1;
-        n_sq_y = n_sq_y1;
-        
-    end;
-    
+      n_sq_x = input(['Number of squares along the X direction ([]=' num2str(n_sq_x_default) ') = ']); %6
+      if isempty(n_sq_x), n_sq_x = n_sq_x_default; end;
+      n_sq_y = input(['Number of squares along the Y direction ([]=' num2str(n_sq_y_default) ') = ']); %6
+      if isempty(n_sq_y), n_sq_y = n_sq_y_default; end;
+
+  else
+
+      % Try to automatically count the number of squares in the grid
+
+      n_sq_x1 = count_squares(I,x1,y1,x2,y2,wintx);
+      n_sq_x2 = count_squares(I,x3,y3,x4,y4,wintx);
+      n_sq_y1 = count_squares(I,x2,y2,x3,y3,wintx);
+      n_sq_y2 = count_squares(I,x4,y4,x1,y1,wintx);
+
+
+
+      % If could not count the number of squares, enter manually
+
+      if (n_sq_x1~=n_sq_x2)|(n_sq_y1~=n_sq_y2),
+
+
+          disp('Could not count the number of squares in the grid. Enter manually.');
+          n_sq_x = input(['Number of squares along the X direction ([]=' num2str(n_sq_x_default) ') = ']); %6
+          if isempty(n_sq_x), n_sq_x = n_sq_x_default; end;
+          n_sq_y = input(['Number of squares along the Y direction ([]=' num2str(n_sq_y_default) ') = ']); %6
+          if isempty(n_sq_y), n_sq_y = n_sq_y_default; end;
+
+      else
+
+          n_sq_x = n_sq_x1;
+          n_sq_y = n_sq_y1;
+
+      end;
+
+  end;
 end;
 
 
@@ -166,18 +234,18 @@ n_sq_y_default = n_sq_y;
 
 if (exist('dX')~=1)|(exist('dY')~=1), % This question is now asked only once
     % Enter the size of each square
-    
+
     dX = input(['Size dX of each square along the X direction ([]=' num2str(dX_default) 'mm) = ']);
     dY = input(['Size dY of each square along the Y direction ([]=' num2str(dY_default) 'mm) = ']);
     if isempty(dX), dX = dX_default; else dX_default = dX; end;
     if isempty(dY), dY = dY_default; else dY_default = dY; end;
-    
+
 else
-    
+
     fprintf(1,['Size of each square along the X direction: dX=' num2str(dX) 'mm\n']);
     fprintf(1,['Size of each square along the Y direction: dY=' num2str(dY) 'mm   (Note: To reset the size of the squares, clear the variables dX and dY)\n']);
     %fprintf(1,'Note: To reset the size of the squares, clear the variables dX and dY\n');
-    
+
 end;
 
 
@@ -211,29 +279,29 @@ L = n_sq_y*dY;
 
 
 
+if data_loaded == 0,
+  %%%%%%%%%%%%%%%%%%%%%%%% ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%
+  figure(2);
+  hold on;
+  plot(XX(1,:),XX(2,:),'r+');
+  title('The red crosses should be close to the image corners');
+  hold off;
 
-%%%%%%%%%%%%%%%%%%%%%%%% ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%
-figure(2);
-hold on;
-plot(XX(1,:),XX(2,:),'r+');
-title('The red crosses should be close to the image corners');
-hold off;
+  disp('If the guessed grid corners (red crosses on the image) are not close to the actual corners,');
+  disp('it is necessary to enter an initial guess for the radial distortion factor kc (useful for subpixel detection)');
+  quest_distort = input('Need of an initial guess for distortion? ([]=no, other=yes) ');
 
-disp('If the guessed grid corners (red crosses on the image) are not close to the actual corners,');
-disp('it is necessary to enter an initial guess for the radial distortion factor kc (useful for subpixel detection)');
-quest_distort = input('Need of an initial guess for distortion? ([]=no, other=yes) ');
+  quest_distort = ~isempty(quest_distort);
 
-quest_distort = ~isempty(quest_distort);
-
-if quest_distort,
-    % Estimation of focal length:
-    c_g = [size(I,2);size(I,1)]/2 + .5;
-    f_g = Distor2Calib(0,[[x(1) x(2) x(4) x(3)] - c_g(1);[y(1) y(2) y(4) y(3)] - c_g(2)],1,1,4,W,L,[-W/2 W/2 W/2 -W/2;L/2 L/2 -L/2 -L/2; 0 0 0 0],100,1,1);
-    f_g = mean(f_g);
-    script_fit_distortion;
+  if quest_distort,
+      % Estimation of focal length:
+      c_g = [size(I,2);size(I,1)]/2 + .5;
+      f_g = Distor2Calib(0,[[x(1) x(2) x(4) x(3)] - c_g(1);[y(1) y(2) y(4) y(3)] - c_g(2)],1,1,4,W,L,[-W/2 W/2 W/2 -W/2;L/2 L/2 -L/2 -L/2; 0 0 0 0],100,1,1);
+      f_g = mean(f_g);
+      script_fit_distortion;
+  end;
+  %%%%%%%%%%%%%%%%%%%%% END ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%
 end;
-%%%%%%%%%%%%%%%%%%%%% END ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%
-
 
 
 
@@ -300,7 +368,7 @@ X = Xgrid;
 % Saves all the data into variables:
 
 eval(['dX_' num2str(kk) ' = dX;']);
-eval(['dY_' num2str(kk) ' = dY;']);  
+eval(['dY_' num2str(kk) ' = dY;']);
 
 eval(['wintx_' num2str(kk) ' = wintx;']);
 eval(['winty_' num2str(kk) ' = winty;']);
@@ -310,3 +378,13 @@ eval(['X_' num2str(kk) ' = X;']);
 
 eval(['n_sq_x_' num2str(kk) ' = n_sq_x;']);
 eval(['n_sq_y_' num2str(kk) ' = n_sq_y;']);
+
+%string_save = 'save calib_data n_ima type_numbering N_slots image_numbers format_image calib_name Hcal Wcal nx ny map small_calib_image';
+
+if data_loaded == 0,
+  save(ima_name, 'or_x', 'or_y', 'dX', 'dY', 'XX', 'n_sq_x', 'n_sq_y');
+end;
+
+
+
+
