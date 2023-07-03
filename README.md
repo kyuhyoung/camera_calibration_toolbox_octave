@@ -1,8 +1,7 @@
 # Octave installation
 ## Windows
 https://octave.org/download#ms-windows
-### Easy install
-https://ftpmirror.gnu.org/octave/windows/octave-8.2.0-w64-installer.exe
+* Easy install : https://ftpmirror.gnu.org/octave/windows/octave-8.2.0-w64-installer.exe
 ## Ubuntu
 https://wiki.octave.org/Octave_for_Debian_systems
 # camera_calibration_toolbox_octave
