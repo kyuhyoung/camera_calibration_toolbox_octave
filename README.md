@@ -1,3 +1,8 @@
+# Octave installation
+## Windows
+https://octave.org/download#ms-windows
+## Ubuntu
+https://wiki.octave.org/Octave_for_Debian_systems
 # camera_calibration_toolbox_octave
 An Octave port of Camera Calibration Toolbox for Matlab (1st June 2017) (http://www.vision.caltech.edu/bouguetj/calib_doc/)
 
