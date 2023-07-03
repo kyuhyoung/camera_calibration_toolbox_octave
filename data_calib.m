@@ -1,6 +1,6 @@
 %%% This script alets the user enter the name of the images (base name, numbering scheme,...
 
-      
+
 % Checks that there are some images in the directory:
 
 l_ras = dir('*ras');
@@ -17,8 +17,10 @@ l_jpg = dir('*jpg');
 s_jpg = size(l_jpg,1);
 l_jpeg = dir('*jpeg');
 s_jpeg = size(l_jpeg,1);
+l_png = dir('*png');
+s_png = size(l_png, 1);
 
-s_tot = s_ras + s_bmp + s_tif + s_pgm + s_jpg + s_ppm + s_jpeg;
+s_tot = s_ras + s_bmp + s_tif + s_pgm + s_jpg + s_ppm + s_jpeg + s_png;
 
 if s_tot < 1,
    fprintf(1,'No image in this directory in either ras, bmp, tif, pgm, ppm or jpg format. Change directory and try again.\n');
@@ -36,17 +38,17 @@ while (Nima_valid==0),
 
    fprintf(1,'\n');
    calib_name = input('Basename camera calibration images (without number nor suffix): ','s');
-   
+
    format_image = '0';
-   
+
 	while format_image == '0',
-   
-   	format_image =  input('Image format: ([]=''r''=''ras'', ''b''=''bmp'', ''t''=''tif'', ''p''=''pgm'', ''j''=''jpg'', ''m''=''ppm'') ','s');
-		
+
+   	format_image =  input('Image format: ([]=''r''=''ras'', ''b''=''bmp'', ''t''=''tif'', ''p''=''pgm'', ''j''=''jpg'', ''m''=''ppm'', ''n''=''png'') ','s');
+
 		if isempty(format_image),
    		format_image = 'ras';
 		end;
-      
+
       if lower(format_image(1)) == 'm',
          format_image = 'ppm';
       else
@@ -68,8 +70,12 @@ while (Nima_valid==0),
                          if lower(format_image(1)) == 'g',
                              format_image = 'jpeg';
                          else
-                             disp('Invalid image format');
-                            format_image = '0'; % Ask for format once again
+                             if lower(format_image(1)) == 'n',
+                                 format_image = 'png';
+                             else
+                                disp('Invalid image format');
+                                format_image = '0'; % Ask for format once again
+                             end;
                          end;
                      end;
                   end;
@@ -79,9 +85,9 @@ while (Nima_valid==0),
       end;
    end;
 
-      
+
    check_directory;
-   
+
 end;
 
 
@@ -94,15 +100,15 @@ end;
 
 if (Nima_valid~=0),
     % Reading images:
-    
+
     ima_read_calib; % may be launched from the toolbox itself
     % Show all the calibration images:
-    
+
     if ~isempty(ind_read),
-        
+
         mosaic;
-        
+
     end;
-    
+
 end;
 

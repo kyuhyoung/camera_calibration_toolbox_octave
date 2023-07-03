@@ -1,11 +1,11 @@
 function	[out,dout]=rodrigues(in)
 
 % RODRIGUES	Transform rotation matrix into rotation vector and viceversa.
-%		
+%
 %		Sintax:  [OUT]=RODRIGUES(IN)
 % 		If IN is a 3x3 rotation matrix then OUT is the
 %		corresponding 3x1 rotation vector
-% 		if IN is a rotation 3-vector then OUT is the 
+% 		if IN is a rotation 3-vector then OUT is the
 %		corresponding 3x3 rotation matrix
 %
 
@@ -30,7 +30,7 @@ function	[out,dout]=rodrigues(in)
 %bigeps = 10e+4*eps;
 bigeps = 10e+20*eps;
 
-if ((m==1) & (n==3)) | ((m==3) & (n==1)) %% it is a rotation vector
+if ((m==1) && (n==3)) | ((m==3) && (n==1)) %% it is a rotation vector
     theta = norm(in);
     if theta < eps
         R = eye(3);
@@ -233,15 +233,15 @@ gain = norm(om2 - omc)/norm(om2 - om_app)
 
 
 %% OTHER BUG: (FIXED NOW!!!)
-omu = randn(3,1);   
+omu = randn(3,1);
 omu = omu/norm(omu)
-om = pi*omu;        
+om = pi*omu;
 [R,dR]= rodrigues(om);
 [om2] = rodrigues(R);
 [om om2]
 
 %% NORMAL OPERATION
-om = randn(3,1);         
+om = randn(3,1);
 [R,dR]= rodrigues(om);
 [om2] = rodrigues(R);
 [om om2]
