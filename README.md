@@ -4,6 +4,16 @@ https://octave.org/download#ms-windows
 * Easy install : https://ftpmirror.gnu.org/octave/windows/octave-8.2.0-w64-installer.exe
 ## Ubuntu
 https://wiki.octave.org/Octave_for_Debian_systems
+# Usage
+## Windows
+From CMD
+```
+"C:\Program Files\GNU Octave\Octave-8.2.0\octave-launch.exe" --gui
+```
+And then from Octave console.
+```
+run calib_gui.m
+```
 # camera_calibration_toolbox_octave
 An Octave port of Camera Calibration Toolbox for Matlab (1st June 2017) (http://www.vision.caltech.edu/bouguetj/calib_doc/)
 
